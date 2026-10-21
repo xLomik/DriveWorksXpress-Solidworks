@@ -445,12 +445,50 @@ Sub Propiedades(m As SldWorks.ModelDoc2)
 End Sub
 
 Sub Guardar(m As SldWorks.ModelDoc2, nombre As String)
-    Dim errs As Long, warns As Long
-    m.ForceRebuild3 False
-    If Not m.Extension.SaveAs(gCarpeta & nombre, swSaveAsCurrentVersion, swSaveAsOptions_Silent, Nothing, errs, warns) Then
-        Err.Raise vbObjectError + 6, , "No se pudo guardar " & nombre & " (codigo " & errs & "). Cierra cualquier archivo con ese nombre y vuelve a intentar."
+    Dim ruta As String, errs As Long, warns As Long
+    ruta = gCarpeta & nombre
+
+    ' Un croquis abierto o una seleccion activa impiden guardar
+    If m.GetType <> swDocDRAWING Then
+        If Not m.SketchManager.ActiveSketch Is Nothing Then m.SketchManager.InsertSketch True
     End If
+    m.ClearSelection2 True
+    m.ForceRebuild3 False
+
+    ' Si ya existe un archivo con ese nombre (de una ejecucion anterior), se reemplaza
+    If Dir(ruta) <> "" Then
+        If swApp.GetOpenDocumentByName(ruta) Is Nothing Then
+            Kill ruta
+        Else
+            Err.Raise vbObjectError + 6, , ruta & " esta abierto en SOLIDWORKS. Cierralo y vuelve a ejecutar la macro."
+        End If
+    End If
+
+    If m.Extension.SaveAs(ruta, swSaveAsCurrentVersion, swSaveAsOptions_Silent, Nothing, errs, warns) Then Exit Sub
+    ' Segundo intento con la llamada clasica
+    errs = m.SaveAs3(ruta, swSaveAsCurrentVersion, swSaveAsOptions_Silent)
+    If errs = 0 And Dir(ruta) <> "" Then Exit Sub
+
+    Err.Raise vbObjectError + 6, , "No se pudo guardar " & ruta & vbCrLf & _
+        "Errores: " & errs & "  Avisos: " & warns & vbCrLf & _
+        "Carpeta escribible: " & CarpetaEscribible() & vbCrLf & _
+        "Titulo del documento: " & m.GetTitle
 End Sub
+
+Function CarpetaEscribible() As String
+    On Error GoTo NoSe
+    Dim n As Integer, prueba As String
+    prueba = gCarpeta & "_prueba_escritura.txt"
+    n = FreeFile
+    Open prueba For Output As #n
+    Print #n, "ok"
+    Close #n
+    Kill prueba
+    CarpetaEscribible = "si"
+    Exit Function
+NoSe:
+    CarpetaEscribible = "NO (" & Err.Description & ")"
+End Function
 
 Function Insertar(asm As SldWorks.AssemblyDoc, archivo As String, x As Double, y As Double, z As Double) As SldWorks.Component2
     Dim c As SldWorks.Component2
