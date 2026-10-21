@@ -139,6 +139,11 @@ Esta es la etapa más importante: **un configurador es tan bueno como su modelo 
 
 ### 4.2 Cotas y operaciones a nombrar
 
+> **Atajo:** la macro [`macros/CrearMaestrosFiltroBolsa.bas`](../macros/CrearMaestrosFiltroBolsa.bas) crea estos
+> modelos por ti. Usa nombres algo distintos a los de esta sección (radio en vez de diámetro, toma de
+> manómetro en la tapa, manguito en vez de rosca cosmética); sus nombres exactos y las reglas listas para
+> copiar están en [`reglas-driveworksxpress.md`](reglas-driveworksxpress.md).
+
 **FB_Cuerpo**
 
 | Nombre sugerido | Qué controla |
