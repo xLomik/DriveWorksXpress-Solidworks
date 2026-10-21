@@ -1,7 +1,15 @@
-# DriveWorksXpress · Configurador de filtros industriales
+# DriveWorksXpress · Configurador de carcazas de filtros industriales
 
-Configurador de producto guiado para el diseño de filtros industriales con DriveWorksXpress (incluido en SOLIDWORKS).
+Configurador de producto guiado para carcazas de filtros industriales con DriveWorksXpress (SOLIDWORKS 2022), basado en la codificación de carcazas de la empresa (`ZAB020021084`).
 
-- [Guía paso a paso](docs/guia-configurador-filtros.md): capacidades y límites de DriveWorksXpress, preparación de modelos maestros, formulario, reglas y plan de pruebas, con un filtro de bolsa como ejemplo.
-- [Macro de SOLIDWORKS](macros/CrearMaestrosFiltroBolsa.bas): crea los modelos maestros (cuerpo, tapa, boquilla, canasta, ensamble y planos) con cotas y operaciones ya nombradas. Escrita para SOLIDWORKS 2022 (no probada aún en un equipo real).
-- [Hoja de reglas](docs/reglas-driveworksxpress.md): qué capturar, el formulario y todas las reglas listas para copiar en DriveWorksXpress.
+**Empieza aquí:** [docs/arquitectura-carcazas.md](docs/arquitectura-carcazas.md)
+
+| Archivo | Contenido |
+|---|---|
+| [docs/arquitectura-carcazas.md](docs/arquitectura-carcazas.md) | Cómo se lleva la codificación a DriveWorksXpress, supuestos y pasos |
+| [docs/reglas-carcazas.md](docs/reglas-carcazas.md) | Formulario y todas las reglas listas para copiar (generado) |
+| [macros/CrearMaestrosCarcaza.bas](macros/CrearMaestrosCarcaza.bas) | Macro que crea los modelos maestros `FC_*` |
+| [scripts/generar_reglas.py](scripts/generar_reglas.py) | Fuente de datos; regenera reglas y tablas (`python scripts/generar_reglas.py`) |
+| [datos/](datos) | Codificación y tablas de ingeniería (CSV) y presión máxima por schedule (Excel) |
+| [docs/guia-configurador-filtros.md](docs/guia-configurador-filtros.md) | Guía general de DriveWorksXpress con un ejemplo de filtro de bolsa |
+| [macros/CrearMaestrosFiltroBolsa.bas](macros/CrearMaestrosFiltroBolsa.bas), [docs/reglas-driveworksxpress.md](docs/reglas-driveworksxpress.md) | El ejemplo de filtro de bolsa (primera versión) |

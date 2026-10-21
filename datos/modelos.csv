@@ -1,0 +1,19 @@
+codigo,direccion_flujo,elemento,familia
+Z,Colineal,1 cartucho,Cartucho
+Y,No colineal,1 cartucho,Cartucho
+X,Colineal,1 cartucho (automatizado),Cartucho
+W,No colineal,Varios cartuchos,Multicartucho
+V,Colineal,Canastilla truncada,Canastilla
+T,No colineal,Canastilla normal,Canastilla
+S,Direccional,Cartucho,Cartucho
+R,Direccional,Canastilla cónica,Canastilla
+Q,Colineal,Varios cartuchos cilíndricos concéntricos,Multicartucho
+P,No colineal,Varios cartuchos cilíndricos concéntricos,Multicartucho
+N,Colineal,Canastilla invertida,Canastilla
+M,Direccional,Tipo botella (filtro aceite carro),Especial
+L,Direccional,Canastilla cilíndrica,Canastilla
+K,Colineal,Canastilla normal,Canastilla
+J,Colineal,Cartucho inclinado tipo Y,Cartucho
+G,No colineal,Discos tipo sparkler,Especial
+F,Colineal,Varios cartuchos,Multicartucho
+D,No colineal,Placas verticales,Especial

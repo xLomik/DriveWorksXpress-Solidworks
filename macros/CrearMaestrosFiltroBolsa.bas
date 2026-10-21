@@ -21,7 +21,7 @@ Dim gCarpeta As String
 Dim gAvisos As String
 
 ' Valores iniciales en mm
-Const RADIO_EXT As Double = 109.55   ' Ø219.1 / 2
+Const RADIO_EXT As Double = 109.55   ' D 219.1 / 2
 Const ESPESOR As Double = 3
 Const ALTURA As Double = 560
 Const DIAM_TUBO As Double = 60.3     ' DN50
