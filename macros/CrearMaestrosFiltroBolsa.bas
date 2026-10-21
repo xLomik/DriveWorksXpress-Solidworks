@@ -292,6 +292,22 @@ End Sub
 ' ----------------------------------------------------------------------------
 Sub CrearPlano(nombre As String, ext As String)
     On Error GoTo FalloPlano
+    Dim ruta As String
+    ruta = gCarpeta & nombre & ext
+
+    ' El modelo debe estar abierto para insertar sus vistas
+    Dim mdl As SldWorks.ModelDoc2
+    Set mdl = swApp.GetOpenDocumentByName(ruta)
+    If mdl Is Nothing Then
+        Dim e As Long, w As Long, tipo As Long
+        If UCase(ext) = ".SLDASM" Then tipo = swDocASSEMBLY Else tipo = swDocPART
+        Set mdl = swApp.OpenDoc6(ruta, tipo, swOpenDocOptions_Silent, "", e, w)
+        If mdl Is Nothing Then
+            gAvisos = gAvisos & "- No se pudo abrir " & ruta & " para hacer su plano." & vbCrLf
+            Exit Sub
+        End If
+    End If
+
     Dim m As SldWorks.ModelDoc2
     Set m = swApp.NewDocument(swApp.GetUserPreferenceStringValue(swDefaultTemplateDrawing), swDwgPaperA3size, 0.42, 0.297)
     If m Is Nothing Then
@@ -300,15 +316,64 @@ Sub CrearPlano(nombre As String, ext As String)
     End If
     Dim d As SldWorks.DrawingDoc
     Set d = m
-    If Not d.Create1stAngleViews2(gCarpeta & nombre & ext) Then
-        gAvisos = gAvisos & "- No se pudieron insertar las vistas de " & nombre & "." & vbCrLf
+    If InsertarVistas(d, mdl, ruta) Then
+        d.InsertModelAnnotations3 swImportModelItemsFromEntireModel, swInsertDimensionsMarkedForDrawing, True, False, False, False
+    Else
+        gAvisos = gAvisos & "- No se pudieron insertar las vistas de " & nombre & " (el plano se guardo vacio)." & vbCrLf
     End If
-    d.InsertModelAnnotations3 swImportModelItemsFromEntireModel, swInsertDimensionsMarkedForDrawing, True, False, False, False
     Guardar m, nombre & ".SLDDRW"
     swApp.CloseDoc m.GetTitle
     Exit Sub
 FalloPlano:
     gAvisos = gAvisos & "- Plano de " & nombre & ": " & Err.Description & vbCrLf
+End Sub
+
+' Intenta tres metodos; devuelve True si quedo al menos una vista
+Function InsertarVistas(d As SldWorks.DrawingDoc, mdl As SldWorks.ModelDoc2, ruta As String) As Boolean
+    On Error Resume Next
+    If d.Create1stAngleViews2(ruta) Then InsertarVistas = True: Exit Function
+    If d.Create3rdAngleViews2(ruta) Then InsertarVistas = True: Exit Function
+
+    ' Vistas con nombre del modelo (los nombres estandar empiezan con "*" y
+    ' dependen del idioma, por eso se leen del propio modelo)
+    Dim nombres As Variant, i As Integer, k As Integer
+    Dim px As Variant, py As Variant
+    px = Array(0.1, 0.1, 0.27, 0.3)
+    py = Array(0.2, 0.08, 0.2, 0.08)
+    nombres = mdl.GetModelViewNames
+    If IsEmpty(nombres) Then Exit Function
+    For i = 0 To UBound(nombres)
+        If k > 3 Then Exit For
+        If Left(nombres(i), 1) = "*" Then
+            If Not d.CreateDrawViewFromModelView3(ruta, nombres(i), px(k), py(k), 0) Is Nothing Then k = k + 1
+        End If
+    Next i
+    If k = 0 Then
+        For Each px In Array("*Front", "*Top", "*Right", "*Isometric")
+            If Not d.CreateDrawViewFromModelView3(ruta, CStr(px), 0.1 + 0.1 * k, 0.15, 0) Is Nothing Then k = k + 1
+        Next px
+    End If
+    InsertarVistas = (k > 0)
+End Function
+
+' Ejecuta solo esta rutina para rehacer los planos sin volver a crear los modelos
+Sub SoloPlanos()
+    Set swApp = Application.SldWorks
+    gAvisos = ""
+    gCarpeta = InputBox("Carpeta donde estan los modelos maestros:", _
+                        "Configurador de filtros", "C:\Configurador_Filtros\Maestro\")
+    If gCarpeta = "" Then Exit Sub
+    If Right(gCarpeta, 1) <> "\" Then gCarpeta = gCarpeta & "\"
+    CrearPlano "FB_Cuerpo", ".SLDPRT"
+    CrearPlano "FB_Tapa", ".SLDPRT"
+    CrearPlano "FB_Boquilla", ".SLDPRT"
+    CrearPlano "FB_Canasta", ".SLDPRT"
+    CrearPlano "FB_Ensamble", ".SLDASM"
+    If gAvisos = "" Then
+        MsgBox "Planos creados en " & gCarpeta, vbInformation
+    Else
+        MsgBox "Avisos:" & vbCrLf & gAvisos, vbExclamation
+    End If
 End Sub
 
 ' ----------------------------------------------------------------------------
