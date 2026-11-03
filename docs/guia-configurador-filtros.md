@@ -40,7 +40,8 @@ aprovecha al migrar.
 1. **SOLIDWORKS** (cualquier licencia: Standard, Professional o Premium) en Windows.
 2. **Activar DriveWorksXpress**: `Herramientas > Productos Xpress > DriveWorksXpress` (en versiones
    anteriores a 2017 está en `Herramientas > DriveWorksXpress`). La primera vez pide un código de
-   activación gratuito que se solicita desde el mismo diálogo.
+   activación gratuito que se solicita desde el mismo diálogo. En SOLIDWORKS 2025 la activación se hace
+   iniciando sesión con tu cuenta 3DEXPERIENCE ID en ese diálogo.
 3. Una **carpeta de trabajo limpia**, por ejemplo:
 
 ```

@@ -2,7 +2,7 @@
 
 Esta hoja corresponde **exactamente** a los nombres que crea la macro
 [`macros/CrearMaestrosFiltroBolsa.bas`](../macros/CrearMaestrosFiltroBolsa.bas). Sigue el orden de las
-pestañas de DriveWorksXpress (SOLIDWORKS 2022: `Herramientas > Productos Xpress > DriveWorksXpress`).
+pestañas de DriveWorksXpress (SOLIDWORKS 2025: `Herramientas > Productos Xpress > DriveWorksXpress`).
 
 > **Sintaxis.** En las reglas, `[TamanoBolsa]` significa "inserta la entrada TamanoBolsa" con el generador
 > de reglas. Si tu Windows usa coma decimal, escribe los decimales como el generador te lo pida (por
@@ -10,7 +10,7 @@ pestañas de DriveWorksXpress (SOLIDWORKS 2022: `Herramientas > Productos Xpress
 
 ## 0. Ejecutar la macro
 
-1. Abre SOLIDWORKS 2022 sin ningún documento abierto.
+1. Abre SOLIDWORKS 2025 sin ningún documento abierto.
 2. `Herramientas > Macro > Nueva`, guarda como `CrearMaestros.swp`.
 3. En el editor VBA: `Archivo > Importar archivo...` → `CrearMaestrosFiltroBolsa.bas`. Borra el
    módulo vacío que se creó (`Module1`).

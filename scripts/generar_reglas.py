@@ -9,6 +9,7 @@ Salida: docs/reglas-carcazas.md, datos/*.csv, datos/presion_maxima.xlsx
 """
 from pathlib import Path
 import csv
+import re
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
@@ -210,13 +211,17 @@ def regla_od_carcaza():
 
 def regla_espesor():
     """Espesor de pared en mm. Schedule 7 (Otro) usa la entrada [EspesorManual].
-    Combinaciones que no existen en la norma devuelven Sch 40 (o el mayor disponible)."""
+    Si el schedule no existe para ese Ø, usa el siguiente más grueso que exista (o el más grueso
+    disponible si no hay ninguno mayor), para no quedar nunca por debajo de lo pedido."""
     ramas = []
     for sch, idx in SCH_INDICE.items():
         pares = []
         for c, _, _ in DIAM_CARCAZA:
             fila = ESPESORES[c]
-            v = fila[idx] if fila[idx] is not None else (fila[2] or fila[1])
+            v = fila[idx]
+            if v is None:
+                mayores = [x for x in fila[idx + 1:] if x is not None]
+                v = mayores[0] if mayores else max(x for x in fila if x is not None)
             pares.append((c, num(v)))
         ramas.append((sch, si_anidado(COD["DiamCarcaza"], pares, "0")))
     sanit = si_anidado(COD["DiamCarcaza"], [(c, num(v[1])) for c, v in SANITARIO.items()], "3")
@@ -252,21 +257,21 @@ def reglas():
     t = regla_espesor()
     r = f"({od})/2"
     od_con = regla_od_conexion()
-    codigo = " & ".join(COD[k] for k in
-                        ("Modelo", "TipoConexion", "TipoCierre", "DiamConexion",
-                         "Material", "Presion", "DiamCarcaza", "Schedule"))
+    # Formato con guiones, como el nombre de carpeta de tu planoteca: PAH-0200-21-082
+    grupos = [("Modelo", "TipoConexion", "TipoCierre"), ("DiamConexion",),
+              ("Material", "Presion"), ("DiamCarcaza", "Schedule")]
+    codigo = ' & "-" & '.join(" & ".join(COD[k] for k in g) for g in grupos)
     m = COD["Modelo"]
     direccion = {c: d for c, d, _, _ in MODELOS}
     no_colineal = [c for c, d in direccion.items() if d == "No colineal"]
     direccional = [c for c, d in direccion.items() if d == "Direccional"]
     centro = [c for c, _, u, *_ in CIERRES if u == "Centro"]
-    h = "([LargoElemento]+150)"
+    h = "([LargoElemento]+184)"
     return {
         "codigo": codigo,
         "R": r, "T": t, "OD": od, "H": h, "ODC": od_con,
-        "altura_salida": (f"IF({esta_en(m, no_colineal)},ROUND({h}*0.2,0),"
-                          f"IF({esta_en(m, direccional)},ROUND({h}*0.2,0),ROUND({h}*0.7,0)))"),
-        "altura_entrada": f"ROUND({h}*0.7,0)",
+        "altura_salida": f"IF(OR({esta_en(m, no_colineal)},{esta_en(m, direccional)}),83,[AlturaEntrada])",
+        "altura_entrada": "[AlturaEntrada]",
         "plano_cierre": f"IF({esta_en(COD['TipoCierre'], centro)},ROUND({h}/2,0),{h})",
         "brida_od": regla_brida(0), "brida_e": regla_brida(1),
         "brida_bc": regla_brida(2), "brida_n": regla_brida(3, factor=1, defecto="4"),
@@ -375,13 +380,19 @@ def documento():
       "cópiala completa en el generador de reglas de DriveWorksXpress. Donde dice `[Entrada]`, el texto ya es "
       "el nombre del control; si el generador no lo reconoce al pegar, vuelve a insertar ese control desde la "
       "lista de entradas.\n")
+    a("> **Coma decimal.** Las reglas usan punto decimal y coma entre argumentos (`ROUND(1.5,0)`). Antes de pegar "
+      "las largas, prueba esa regla corta en el generador. Si la marca como error (Windows con coma decimal), usa "
+      "[`reglas-carcazas-coma.md`](reglas-carcazas-coma.md): es la misma hoja con `;` entre argumentos y coma "
+      "decimal (`ROUND(1,5;0)`).\n")
 
     a("## 1. Formulario\n")
     a("| Control | Tipo | Notas |\n|---|---|---|")
     a("| `Referencia` | Cuadro de texto, obligatorio | Nº de pedido u OT; hace únicos los nombres de archivo |")
     for k in op:
         a(f"| `{k}` | Lista desplegable | {len(op[k])} opciones (abajo) |")
-    a("| `LargoElemento` | Cuadro numérico (mm) | Largo del cartucho/canastilla. No forma parte del código |")
+    a("| `LargoElemento` | Cuadro numérico (mm) | Largo del cartucho/canastilla (1016 = 40\"). No forma parte del código |")
+    a("| `AlturaEntrada` | Cuadro numérico (mm) | Altura del eje de entrada desde el fondo (754 en PAH, 388 en WAT) |")
+    a("| `CartuchosAlrededor` | Botón de giro (3 a 12) | Solo familia multicartucho: 5 en PAH, 6 en WAT |")
     a("| `EspesorManual` | Cuadro numérico (mm) | Solo se usa con Schedule 7 - Otro |")
     a("| `MaterialOtro` | Cuadro de texto | Solo se usa con Material 7 - Otro |\n")
     a("Opciones de cada lista (pega una por línea; el código va siempre al principio porque las reglas lo "
@@ -390,8 +401,8 @@ def documento():
         a(f"**{k}**\n\n```\n" + "\n".join(vals) + "\n```\n")
 
     a("## 2. Código del producto\n")
-    a("Se usa en el nombre de archivo y en la propiedad `Codigo`. Ejemplo: Z + A + B + 0200 + 2 + 1 + 08 + 4 → "
-      "`ZAB020021084`.\n")
+    a("Se usa en el nombre de archivo y en la propiedad `Codigo`. Va con guiones, igual que el nombre de "
+      "carpeta de tu planoteca: P + A + H, 0200, 2 + 1, 08 + 2 → `PAH-0200-21-082`.\n")
     a(f"```\n{r['codigo']}\n```\n")
 
     a("## 3. Nombres de archivo\n")
@@ -407,23 +418,27 @@ def documento():
 
     a("## 4. FC_Cuerpo\n")
     bloque("RadioExt@Croquis_Cuerpo", r["R"], "radio exterior según Ø carcaza y schedule (sanitaria usa OD de tubo)")
-    bloque("Espesor@Croquis_Cuerpo", r["T"], "espesor nominal ASME B36.10/B36.19; si el schedule no existe para ese Ø usa Sch 40")
+    bloque("Espesor@Croquis_Cuerpo", r["T"], "espesor nominal ASME B36.10/B36.19; si el schedule no existe para ese Ø usa el siguiente más grueso")
     bloque("EspesorFondo@Croquis_Cuerpo", r["T"], "mismo valor que la pared (provisional)")
-    bloque("Altura@Croquis_Cuerpo", r["H"], "largo del elemento + 150 mm (provisional)")
+    bloque("Altura@Croquis_Cuerpo", r["H"], "largo del elemento + 184 mm, como tu modelo WAT (1016 + 184 = 1200)")
     bloque("Distancia@Plano_Cierre", r["plano_cierre"], "cierres D, G y P van al centro")
     bloque("Distancia@Plano_Elemento", f"{r['H']}-20")
     bloque("Distancia@Plano_Entrada", r["altura_entrada"])
-    bloque("Distancia@Plano_Salida", r["altura_salida"], "colineal: misma altura que la entrada; no colineal y direccional: abajo")
+    bloque("Distancia@Plano_Salida", r["altura_salida"], "colineal: misma altura que la entrada; no colineal y direccional: 83 mm, como en PAH y WAT")
     bloque("Distancia@Plano_Boq_Ent y Distancia@Plano_Boq_Sal", f"{r['R']}+100")
 
     a("## 5. FC_Cierre\n")
-    bloque("DiamBrida@Croquis_Brida_Cuerpo y DiamTapa@Croquis_Tapa", f"ROUND({r['OD']}*1.25+60,0)",
-           "provisional: reemplázalo por tu estándar de bridas de cuerpo")
+    esparragos = esta_en(COD["TipoCierre"], OPERACIONES_CIERRE["Esparragos"])
+    bloque("DiamBrida@Croquis_Brida_Cuerpo y DiamTapa@Croquis_Tapa", f"ROUND({r['OD']}+IF({esparragos},117,37),0)",
+           "como tus anillos de cierre (219.1 + 37 = 256); con espárragos (B, N) se ensancha 80 mm "
+           "para que los espárragos queden dentro de la brida (provisional)")
     bloque("DiamInt@Croquis_Brida_Cuerpo", f"{r['OD']}-2*({r['T']})")
     bloque("DiamClamp@Croquis_Clamp y DiamTapa@Croquis_Tapa_Roscada", f"ROUND({r['OD']}+40,0)")
     bloque("DiamInt@Croquis_Clamp", r["OD"])
-    bloque("Radio@Croquis_Pernos y Radio@Croquis_Pivotados", f"ROUND(({r['OD']}*1.25+60)/2-20,0)")
-    bloque("Radio@Croquis_Davit y Radio@Croquis_Bisagra", f"ROUND(({r['OD']}*1.25+60)/2+30,0)")
+    bloque("Radio@Croquis_Pernos y Radio@Croquis_Pivotados", f"ROUND(({r['OD']}+37)/2+20,0)",
+           "provisional: los pivotados van por fuera del anillo, en las orejas")
+    bloque("Radio@Croquis_Davit y Radio@Croquis_Bisagra", f"ROUND(({r['OD']}+37)/2+60,0)",
+           "por fuera de los espárragos y de los pivotados, para que no se crucen (provisional)")
     a("**Operaciones** (activa si se cumple la condición, suprimida si no):\n")
     a("| Operación | Condición |\n|---|---|")
     for op_, letras in OPERACIONES_CIERRE.items():
@@ -457,8 +472,10 @@ def documento():
     mat = si_anidado(COD["Material"], [(c, f'"{n}"') for c, n, *_ in MATERIALES[:-1]], "[MaterialOtro]")
     props = {
         "Codigo": r["codigo"],
-        "Descripcion": ('"Carcaza " & [Modelo] & " | Conexión " & [TipoConexion] & " " & [DiamConexion] & '
-                        '" | Cierre " & [TipoCierre] & " | " & [Presion] & " | Ø " & [DiamCarcaza] & " " & [Schedule]'),
+        # Sin el código del principio de cada opción (ya va en la propiedad Codigo)
+        "Descripcion": ('"Carcaza " & MID([Modelo],5,100) & " | Conexión " & MID([TipoConexion],5,100) & " " & '
+                        'MID([DiamConexion],8,20) & " | Cierre " & MID([TipoCierre],5,100) & " | " & MID([Presion],5,20) & '
+                        '" | Ø " & MID([DiamCarcaza],6,20) & " " & MID([Schedule],5,20)'),
         "Material": mat,
         "Presion": f"MID([Presion],5,20)",
         "ClaseBrida": f'IF({COD["TipoConexion"]}="A","Clase " & {r["clase"]},"N/A")',
@@ -475,14 +492,70 @@ def documento():
       "aparte. También está en `datos/presion_maxima.xlsx`.")
     a(tabla_md_presion())
     a("")
+
+    id_ = f"(({r['OD']})-2*({r['T']}))"
+    a("## 10. Familia multicartucho con tu modelo real (ENDABLE 2 WT)\n")
+    a("Nombres de cota después de ejecutar `macros/PrepararModeloReal.bas` sobre una copia hecha con Pack and Go. "
+      "Las relaciones salen de tus planos PAH y WAT; ver `docs/analisis-modelo-real.md`. `ID` = OD − 2 × espesor.\n")
+    bloque("ID (diámetro interior del cuerpo, referencia)", id_, "8\" Sch 10 = 211.58")
+    bloque("DiamExt@Croquis1 en SOPORTE 2 CANAS WT", f"ROUND({id_},1)", "apoya en el paso del anillo: 211.6")
+    bloque("DiamExt@Croquis1 en TAPA SOPORTE WT", f"ROUND({id_}-4.6,1)", "207")
+    bloque("DiamExt@Croquis1 en plato guia centro", f"ROUND({id_}-2,1)",
+           "hoy está en 213; debe pasar por el interior del tubo, revisa §3.2 del análisis")
+    pcd = ("IF([CartuchosAlrededor]=5,130,IF([CartuchosAlrededor]=6,140,"
+           "ROUND(70/SIN(PI()/[CartuchosAlrededor]),0)))")
+    bloque("DiamPCD@Croquis1 en las tres placas", pcd, "130 con 5 cartuchos, 140 con 6; otros valores con paso de 70 mm")
+    bloque("NumCartuchos@MatrizC local1 y NumCartuchos@MatrizC local2 en ENSANBLE 2 SART WT (y ENSAMBLE 444)",
+           "[CartuchosAlrededor]", "una matriz repite los cartuchos y la otra sus soportes")
+    bloque("Largo@Saliente-Extruir1 en TORNILLO WT", "[LargoElemento]+84", "1016 + 84 = 1100")
+    bloque("DiamCuerpo@Croquis1 en tapa pata wt", f"ROUND({r['OD']},0)")
+    bloque("DiamAnillo@Croquis1 en SOPORTE BISAGRA WT", f"ROUND({r['OD']}+37,0)")
+    bloque("DiamInterior@Croquis6 en couplin un cuarto wt", f"ROUND({id_},1)")
+    a("**Pendientes** hasta recibir las piezas que faltan: altura del cuerpo (`[LargoElemento]+184`), "
+      "anillos (`OD+37`, paso interior `ID`, ranura de O'ring centrada en `OD+15.9`), "
+      "brida de conexión (reglas de §6), alturas de entrada (`[AlturaEntrada]`) y salida (83), orejas y brazo.\n")
+    a("Los agujeros de las placas tienen que ser una **matriz circular** con su número de instancias como cota; "
+      "si siguen dibujados en el croquis, DriveWorksXpress no puede cambiar cuántos hay.\n")
+
+    a("")
     return "\n".join(out)
+
+
+def a_coma_decimal(expr):
+    """Pasa una regla a Windows con coma decimal: ',' entre argumentos -> ';' y '1.5' -> '1,5'.
+    No toca el texto entre comillas."""
+    res, en_texto = [], False
+    for i, ch in enumerate(expr):
+        if ch == '"':
+            en_texto = not en_texto
+        elif not en_texto:
+            if ch == ",":
+                ch = ";"
+            elif ch == "." and 0 < i < len(expr) - 1 and expr[i - 1].isdigit() and expr[i + 1].isdigit():
+                ch = ","
+        res.append(ch)
+    return "".join(res)
+
+
+def documento_coma(doc):
+    """Versión de la hoja para coma decimal. Solo cambia el código desde la sección 2 (las listas de
+    opciones de la sección 1 llevan comas que son texto)."""
+    corte = doc.index("## 2.")
+    cabeza, resto = doc[:corte], doc[corte:]
+    resto = re.sub(r"```\n(.*?)\n```", lambda m: "```\n" + a_coma_decimal(m.group(1)) + "\n```", resto, flags=re.S)
+    resto = re.sub(r"`([^`\n]+)`", lambda m: "`" + a_coma_decimal(m.group(1)) + "`", resto)
+    cabeza = cabeza.replace("# Reglas de DriveWorksXpress para la codificación de carcazas",
+                            "# Reglas de DriveWorksXpress para la codificación de carcazas (coma decimal)", 1)
+    return cabeza + resto
 
 
 def main():
     escribir_csv(RAIZ / "datos")
     escribir_excel(RAIZ / "datos" / "presion_maxima.xlsx")
-    (RAIZ / "docs" / "reglas-carcazas.md").write_text(documento(), encoding="utf-8")
-    print("Listo: docs/reglas-carcazas.md y datos/")
+    doc = documento()
+    (RAIZ / "docs" / "reglas-carcazas.md").write_text(doc, encoding="utf-8")
+    (RAIZ / "docs" / "reglas-carcazas-coma.md").write_text(documento_coma(doc), encoding="utf-8")
+    print("Listo: docs/reglas-carcazas.md, docs/reglas-carcazas-coma.md y datos/")
 
 
 if __name__ == "__main__":

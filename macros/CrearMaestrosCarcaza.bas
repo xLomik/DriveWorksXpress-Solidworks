@@ -13,6 +13,13 @@ Attribute VB_Name = "CrearMaestrosCarcaza"
 ' Valores iniciales = codigo ZAB020021084 (Z colineal 1 cartucho, brida,
 ' cierre B, conexion 2", S.S. 304, 150 psi, carcaza 8" Sch 40), elemento 500 mm.
 '
+' Para SOLIDWORKS 2025 en espanol: usa las mismas llamadas que la macro del
+' filtro de bolsa, que ya funciono en tu equipo.
+'
+' Los valores iniciales siguen las reglas de docs/reglas-carcazas.md: altura =
+' elemento + 184, brida del cuerpo = OD + 37 (+80 con esparragos), como los
+' anillos de cierre de tu modelo PAH/WAT.
+'
 ' Uso: Herramientas > Macro > Nueva, Archivo > Importar este .bas, borrar
 ' Module1 y ejecutar "main" (F5 con el cursor dentro de Sub main).
 ' ============================================================================
@@ -25,8 +32,8 @@ Dim gAvisos As String
 ' Valores iniciales en mm
 Const OD_CARCAZA As Double = 219.1
 Const ESPESOR As Double = 8.18
-Const ALTURA As Double = 650
-Const DIAM_BRIDA_CUERPO As Double = 334
+Const ALTURA As Double = 684
+Const DIAM_BRIDA_CUERPO As Double = 336
 Const OD_CONEXION As Double = 60.3
 Const PI As Double = 3.14159265358979
 
@@ -136,8 +143,8 @@ Sub CrearCierre()
     Set m = NuevaPieza()
     Dim f As SldWorks.Feature
     Dim rPernos As Double, rDavit As Double
-    rPernos = DIAM_BRIDA_CUERPO / 2 - 20
-    rDavit = DIAM_BRIDA_CUERPO / 2 + 30
+    rPernos = Round((OD_CARCAZA + 37) / 2 + 20, 0)
+    rDavit = Round((OD_CARCAZA + 37) / 2 + 60, 0)
 
     Set f = Anillo(m, "Croquis_Brida_Cuerpo", "DiamBrida", DIAM_BRIDA_CUERPO, OD_CARCAZA - 2 * ESPESOR, 25, True, "Brida_Cuerpo")
     NombrarCotaOperacion f, "Espesor"
