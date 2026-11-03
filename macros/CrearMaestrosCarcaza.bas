@@ -18,7 +18,8 @@ Attribute VB_Name = "CrearMaestrosCarcaza"
 '
 ' Los valores iniciales siguen las reglas de docs/reglas-carcazas.md: altura =
 ' elemento + 184, brida del cuerpo = OD + 37 (+80 con esparragos), como los
-' anillos de cierre de tu modelo PAH/WAT.
+' anillos de cierre de tu modelo PAH/WAT; elemento desde 92 mm del fondo y
+' caras de las bridas a 105.45 mm de la pared.
 '
 ' Uso: Herramientas > Macro > Nueva, Archivo > Importar este .bas, borrar
 ' Module1 y ejecutar "main" (F5 con el cursor dentro de Sub main).
@@ -125,11 +126,11 @@ Sub CrearCuerpo()
     f.Name = "Revolucion_Cuerpo"
 
     PlanoOffset m, PlanoBase(m, 2), ALTURA, False, "Plano_Cierre"
-    PlanoOffset m, PlanoBase(m, 2), ALTURA - 20, False, "Plano_Elemento"
+    PlanoOffset m, PlanoBase(m, 2), ALTURA - 184 + 92, False, "Plano_Elemento"
     PlanoOffset m, PlanoBase(m, 2), 455, False, "Plano_Entrada"
     PlanoOffset m, PlanoBase(m, 2), 455, False, "Plano_Salida"
-    PlanoOffset m, PlanoBase(m, 3), OD_CARCAZA / 2 + 100, False, "Plano_Boq_Ent"
-    PlanoOffset m, PlanoBase(m, 3), OD_CARCAZA / 2 + 100, True, "Plano_Boq_Sal"
+    PlanoOffset m, PlanoBase(m, 3), OD_CARCAZA / 2 + 105.45, False, "Plano_Boq_Ent"
+    PlanoOffset m, PlanoBase(m, 3), OD_CARCAZA / 2 + 105.45, True, "Plano_Boq_Sal"
 
     Propiedades m
     Guardar m, "FC_Cuerpo.SLDPRT"

@@ -17,6 +17,7 @@ Archivos relacionados:
 | [`docs/reglas-carcazas-coma.md`](reglas-carcazas-coma.md) | Las mismas reglas para Windows con coma decimal (`;` entre argumentos) |
 | [`docs/analisis-modelo-real.md`](analisis-modelo-real.md) | Revisión de tu filtro multicartucho de 8" (carpeta NUEVO 2) |
 | [`macros/PrepararModeloReal.bas`](../macros/PrepararModeloReal.bas) | Renombra las cotas de tu modelo real y le agrega propiedades |
+| [`macros/CrearPiezasFaltantes.bas`](../macros/CrearPiezasFaltantes.bas) | Reconstruye las 17 piezas que faltan en NUEVO 2, con su nombre original |
 | [`scripts/generar_reglas.py`](../scripts/generar_reglas.py) | Genera la hoja de reglas y las tablas a partir de los datos. Si cambias un dato, se cambia aquí |
 | [`datos/`](../datos) | La codificación y las tablas de ingeniería en CSV, más `presion_maxima.xlsx` |
 
@@ -98,7 +99,7 @@ propiedad (`Sello`), porque no cambia la geometría.
 | Dirección | Modelos | Cómo se interpretó |
 |---|---|---|
 | Colineal | Z X V Q N K J F | Entrada y salida en lados opuestos, a la misma altura (en línea) |
-| No colineal | Y W T P G D | Entrada arriba y salida abajo, en lados opuestos. Confirmado con tu PAH/WAT: salida a 83 mm del fondo, entrada a la altura que pidas (`AlturaEntrada`) |
+| No colineal | Y W T P G D | Entrada arriba y salida abajo, en lados opuestos. Confirmado con tu PAH/WAT: salida a 46 mm del fondo (con tubo de 2"), entrada a la altura que pidas (`AlturaEntrada`) |
 | Direccional | S R M L | Por ahora igual que no colineal. Falta definir la geometría real |
 
 ---
@@ -119,11 +120,10 @@ propiedad (`Sello`), porque no cambia la geometría.
   ASME VIII-1 Ap. 1-1. Ejemplo: en acero al carbono, Sch 10 no llega a 300 psi en ningún diámetro.
 
 **Tomado de tu modelo PAH/WAT:** brida o anillo del cuerpo = OD + 37 (219.1 → 256), altura = largo del
-elemento + 184 (1016 → 1200), salida a 83 mm del fondo en no colineal.
+elemento + 184 (1016 → 1200), salida a 46 mm del fondo en no colineal, caras de brida a 430 mm entre sí.
 
 **Provisionales** (reemplázalos con tus estándares): el ensanche de la brida con espárragos (+80 mm), el
-espesor de la tapa, las medidas de los accesorios del cierre, la posición horizontal de las boquillas y el
-elemento filtrante (un cilindro).
+espesor de la tapa, las medidas de los accesorios del cierre y el elemento filtrante (un cilindro).
 
 ---
 
@@ -141,7 +141,7 @@ elemento filtrante (un cilindro).
 
 | Código | Qué valida | Resultado esperado |
 |---|---|---|
-| `PAH-0200-21-082` | Tu filtro real: no colineal, brida 2" clase 150, pivotados, 8" Sch 10 | Ø ext. 219.1, pared 3.76, interior 211.58, anillo 256, altura 1200 con elemento 1016, salida 83 |
+| `PAH-0200-21-082` | Tu filtro real: no colineal, brida 2" clase 150, pivotados, 8" Sch 10 | Ø ext. 219.1, pared 3.76, interior 211.58, anillo 256, altura 1200 con elemento 1016, salida 46 |
 | `ZAB-0200-21-084` | Caso base: colineal, brida, davit y espárragos, 8" Sch 40 | pared 8.18, brida del cuerpo 336, entrada = salida |
 | `TEF-0100-31-041` | No colineal, conexión clamp, cierre clamp, S.S. 316, 4" sanitaria | Ø ext. 101.6, pared 2.11 |
 | `KIJ-0050-10-062` | Unión NPT, tapa quick opening roscada, A.C., ≤80 psi, 6" Sch 10 | pared 3.4, tapa roscada activa |

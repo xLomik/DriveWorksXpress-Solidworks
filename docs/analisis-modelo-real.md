@@ -15,7 +15,8 @@ Es el filtro **multicartucho de 8"** (cliente Watercol), en dos versiones:
 | Ensamble | `ENSAMBLE 444` | `ENDABLE 2 WT` (ensamble general) → `ENSANBLE 2 SART WT` (cartuchos) |
 | Cuerpo | tubería 8" | tubería 8" "clase 40" |
 | Entrada / salida | brida 3" / brida 3" | brida 2" 150 psi / brida 2" 150 psi |
-| Altura entrada / salida | 754 / 83 mm desde el fondo | 388 / 83 mm desde el fondo |
+| Altura entrada / salida (eje, desde el fondo del tubo) | 800 / 46 (754 entre boquillas) | 434 / 46 (388 entre boquillas) |
+| Soporte de cartuchos | a 83 mm del fondo del tubo | a 83 mm del fondo del tubo |
 | Cartuchos | 5 alrededor en Ø130 | 6 alrededor en Ø140 (la placa guía tiene además un paso central de Ø65) |
 | Cartucho | 2.5" × 40" (`FILTRO 2.5X40`) | 2.5" × 40" |
 | Cierre | anillo superior + anillo inferior con ranura de O'ring, tornillos pivotados, brazo y bisagra, cáncamos | igual |
@@ -55,24 +56,44 @@ arma el código **con guiones** (`PAH-0200-21-082`).
 6. Las cotas tienen nombres automáticos (`D1@Croquis1`) y hay una llamada `193@Croquis1` en `TAPA SOPORTE WT`
    que vale 207. Para DriveWorksXpress conviene renombrarlas (sección 5).
 
-## 4. Faltan 21 archivos
+## 4. Faltan 17 archivos y cómo se reemplazan
 
-Los ensambles referencian piezas que no venían en la carpeta. Entre ellas están las más importantes para
-el configurador:
+Los ensambles referencian piezas que no venían en la carpeta. Estaban en el Google Drive de la PC donde se
+modeló el filtro (`G:\Mi unidad\...\PLANOTECA\CLIENTES NACIONALES-\WATERCOL\PAH-0200-21-082\CARCASA\ENSAMBLE NUEVO`;
+`pata wt` estaba en `...\WATERCOL\YIC-0200-21-082\BF2`):
 
 ```
-CUERPO FILTRO PAH WT          CAP PAH WT                     8 PULGADAS PAH WT (cap superior)
-Anillo de cierre inferior 8 PULGADAS  WT                     Anillo de cierre superior para 8 PULGADAS PAH WT
-brida 2 pulgadas slip on carcasa 8 pulgadas PAH WT          OREJA SUPERIOR ESP  PAH WT    OREJA INFERIOR ESP PAH WT
-BRAZO PAH WT                  Soporte de bisagra 8 PULGADAS  TORNILLO PAH WT               TUERCA ROSCA PAH WT
-pata wt                       MIPLE media pulgada wt         COLECTOR PAH WT               FILTRO 2.5X40
-filtrante polinero wt         guia sartucho wt               soporte cartucho wt           SOP. TAPA CART WT
-ensamble soporte cartucho
+CUERPO FILTRO PAH WT                CAP PAH WT                        CAP SUPERIOR Ø8 PULGADAS PAH WT
+Anillo de cierre inferior 8 PULGADAS  WT                              Anillo de cierre superior para 8 PULGADAS PAH WT
+brida 2 pulgadas slip on carcasa 8 pulgadas PAH WT                    OREJA SUPERIOR ESP  PAH WT
+OREJA INFERIOR ESP PAH WT           BRAZO PAH WT                      Soporte de bisagra 8 PULGADAS
+TORNILLO PAH WT                     TUERCA ROSCA PAH WT               pata wt
+MIPLE media pulgada wt              filtrante polinero wt             ensamble soporte cartucho (soporte cartucho wt + guia sartucho wt)
+SOP. TAPA CART WT (solo en la versión PAH)
 ```
 
-**Para enviarlos completos:** abre `ENDABLE 2 WT.SLDASM`, ve a `Archivo > Pack and Go`, marca "Incluir planos"
-y "Guardar en archivo Zip". SOLIDWORKS junta en un solo zip el ensamble con todas sus piezas, aunque
-estén en otras carpetas.
+**Si alguien tiene esa planoteca:** que abra `ENDABLE 2 WT.SLDASM`, vaya a `Archivo > Pack and Go`, marque
+"Incluir planos" y "Guardar en archivo Zip". Así salen los originales.
+
+**Si nadie la tiene:** la macro [`macros/CrearPiezasFaltantes.bas`](../macros/CrearPiezasFaltantes.bas) las
+reconstruye con el mismo nombre de archivo, con las medidas de las hojas 1 a 4 del plano WAT:
+
+| Pieza | Cómo queda |
+|---|---|
+| Cuerpo | Tubo 219.1 × 3.76 × 1200 (Sch 10, como el código) |
+| Caps fondo y tapa | Bombeados: falda de 10 y altura total de 45, mismo espesor que el tubo |
+| Anillos de cierre | Ø256 × 22, paso Ø211.58, asiento del tubo Ø219.1 × 8; el inferior con la ranura de O'ring Ø227.97–241.95 × 4 |
+| Brida 2" slip-on | ASME B16.5 clase 150: Ø152.4 × 19.05, 4 agujeros de 19.05 en Ø120.65, con su tubo de 2" Sch 40 |
+| Tornillo pivotado | Ojo Ø25.4 con agujero de 14.5, vástago 3/4" × 82.8 |
+| Cartucho | 2.5" × 40": Ø63.5 / 28 × 1016 |
+| Soporte y guía de cartucho | Vaso Ø28 / 22 × 25 y guía cónica (las 3 aletas, simplificadas) |
+| Pata | Base Ø90 × 9 y ángulo de 30 × 30 × 3, alto 196.82 |
+| Orejas, brazo, soporte de bisagra, tuerca | **Simplificadas**: el plano no las acota |
+
+Pasos: copia la carpeta NUEVO 2 a una carpeta de trabajo, ejecuta la macro sobre esa carpeta y abre
+`ENDABLE 2 WT.SLDASM` desde ahí. SOLIDWORKS encuentra las piezas por su nombre, pero son piezas nuevas: las
+relaciones de posición que tocaban esas piezas salen con error y hay que rehacerlas. La macro no reemplaza
+ningún archivo que ya exista. `SOP. TAPA CART WT` no se reconstruye porque no hay plano de la versión PAH.
 
 ## 5. Cómo cambia el configurador
 
@@ -144,12 +165,14 @@ Las relaciones salen de tus propias medidas (8" Sch 10, OD 219.1, ID 211.58):
 | Nº de cartuchos (matriz) | entrada `CartuchosAlrededor` | 6 / 5 ✓ |
 | Tornillo central: largo | largo cartucho + 84 | 1016 + 84 = 1100 ✓ |
 | Cuerpo: altura | largo cartucho + 184 | 1016 + 184 = 1200 ✓ |
-| Altura salida | 83 fija desde el fondo | 83 ✓ (ambas versiones) |
-| Altura entrada | entrada `AlturaEntrada` (754 en PAH, 388 en WAT) | — |
+| Altura salida | radio del tubo de conexión + 16 | 30.15 + 16 = 46 ✓ (ambas versiones) |
+| Altura entrada | entrada `AlturaEntrada` (800 en PAH, 434 en WAT) | — |
+| Elemento: parte superior | largo cartucho + 92 (soporte a 83 + 9 de espesor) | 1108 |
+| Cara de las bridas | radio del cuerpo + 105.45 | 430 de cara a cara ✓ |
 | Tapa pata / soporte bisagra | OD / Ø anillo | 219 / 256 ✓ |
 
 El OD y el espesor salen de las mismas reglas de `reglas-carcazas.md` §4 (según Ø carcaza y schedule).
 `ID = OD − 2 × espesor`. La regla de cada cota se arma igual que en ese documento.
 
-Con los 21 archivos que faltan puedo cerrar las reglas del cuerpo, los caps, los anillos, las bridas, las
-orejas y el brazo. La macro también renombraría esas cotas.
+Las reglas de las piezas reconstruidas (cuerpo, caps, anillos, brida y cartucho) están en
+[`reglas-carcazas.md`](reglas-carcazas.md) §10.

@@ -270,7 +270,8 @@ def reglas():
     return {
         "codigo": codigo,
         "R": r, "T": t, "OD": od, "H": h, "ODC": od_con,
-        "altura_salida": f"IF(OR({esta_en(m, no_colineal)},{esta_en(m, direccional)}),83,[AlturaEntrada])",
+        # Salida: eje a 46 mm del fondo del tubo en PAH y WAT con tubo de 2" (radio del tubo + 16)
+        "altura_salida": f"IF(OR({esta_en(m, no_colineal)},{esta_en(m, direccional)}),ROUND(({od_con})/2+16,0),[AlturaEntrada])",
         "altura_entrada": "[AlturaEntrada]",
         "plano_cierre": f"IF({esta_en(COD['TipoCierre'], centro)},ROUND({h}/2,0),{h})",
         "brida_od": regla_brida(0), "brida_e": regla_brida(1),
@@ -391,7 +392,7 @@ def documento():
     for k in op:
         a(f"| `{k}` | Lista desplegable | {len(op[k])} opciones (abajo) |")
     a("| `LargoElemento` | Cuadro numérico (mm) | Largo del cartucho/canastilla (1016 = 40\"). No forma parte del código |")
-    a("| `AlturaEntrada` | Cuadro numérico (mm) | Altura del eje de entrada desde el fondo (754 en PAH, 388 en WAT) |")
+    a("| `AlturaEntrada` | Cuadro numérico (mm) | Altura del eje de entrada desde el fondo del tubo (800 en PAH, 434 en WAT) |")
     a("| `CartuchosAlrededor` | Botón de giro (3 a 12) | Solo familia multicartucho: 5 en PAH, 6 en WAT |")
     a("| `EspesorManual` | Cuadro numérico (mm) | Solo se usa con Schedule 7 - Otro |")
     a("| `MaterialOtro` | Cuadro de texto | Solo se usa con Material 7 - Otro |\n")
@@ -422,10 +423,14 @@ def documento():
     bloque("EspesorFondo@Croquis_Cuerpo", r["T"], "mismo valor que la pared (provisional)")
     bloque("Altura@Croquis_Cuerpo", r["H"], "largo del elemento + 184 mm, como tu modelo WAT (1016 + 184 = 1200)")
     bloque("Distancia@Plano_Cierre", r["plano_cierre"], "cierres D, G y P van al centro")
-    bloque("Distancia@Plano_Elemento", f"{r['H']}-20")
+    bloque("Distancia@Plano_Elemento", "[LargoElemento]+92",
+           "parte superior del elemento: tu soporte de cartuchos va a 83 mm del fondo y mide 9 (83 + 9 + 1016 = 1108)")
     bloque("Distancia@Plano_Entrada", r["altura_entrada"])
-    bloque("Distancia@Plano_Salida", r["altura_salida"], "colineal: misma altura que la entrada; no colineal y direccional: 83 mm, como en PAH y WAT")
-    bloque("Distancia@Plano_Boq_Ent y Distancia@Plano_Boq_Sal", f"{r['R']}+100")
+    bloque("Distancia@Plano_Salida", r["altura_salida"],
+           "colineal: misma altura que la entrada; no colineal y direccional: radio del tubo de conexión + 16 "
+           "(46 mm con 2\", como en PAH y WAT)")
+    bloque("Distancia@Plano_Boq_Ent y Distancia@Plano_Boq_Sal", f"{r['R']}+105.45",
+           "cara de la brida a 105.45 mm de la pared, como en PAH (430 mm de cara a cara en 8\")")
 
     a("## 5. FC_Cierre\n")
     esparragos = esta_en(COD["TipoCierre"], OPERACIONES_CIERRE["Esparragos"])
@@ -511,9 +516,34 @@ def documento():
     bloque("DiamCuerpo@Croquis1 en tapa pata wt", f"ROUND({r['OD']},0)")
     bloque("DiamAnillo@Croquis1 en SOPORTE BISAGRA WT", f"ROUND({r['OD']}+37,0)")
     bloque("DiamInterior@Croquis6 en couplin un cuarto wt", f"ROUND({id_},1)")
-    a("**Pendientes** hasta recibir las piezas que faltan: altura del cuerpo (`[LargoElemento]+184`), "
-      "anillos (`OD+37`, paso interior `ID`, ranura de O'ring centrada en `OD+15.9`), "
-      "brida de conexión (reglas de §6), alturas de entrada (`[AlturaEntrada]`) y salida (83), orejas y brazo.\n")
+
+    a("### Piezas reconstruidas con `macros/CrearPiezasFaltantes.bas`\n")
+    a("Estas piezas no venían en la carpeta. La macro las crea con el mismo nombre de archivo y estas cotas. "
+      "Las orejas, el brazo, el soporte de bisagra, la tuerca, la pata y el miple no cambian con el diámetro.\n")
+    bloque("DiamExt@Croquis_Tubo en CUERPO FILTRO PAH WT", r["OD"])
+    bloque("DiamInt@Croquis_Tubo en CUERPO FILTRO PAH WT", id_)
+    bloque("Largo@Tubo en CUERPO FILTRO PAH WT", r["H"], "1016 + 184 = 1200")
+    bloque("RadioExt@Croquis_Cap en CAP PAH WT y CAP SUPERIOR Ø8 PULGADAS PAH WT", r["R"])
+    bloque("Espesor@Croquis_Cap y EspesorCorona@Croquis_Cap (los dos caps)", r["T"])
+    anillos = "en los dos anillos de cierre"
+    bloque(f"RadioExt@Croquis_Anillo {anillos}", f"ROUND({r['OD']}+37,0)/2", "256 / 2")
+    bloque(f"RadioInt@Croquis_Anillo {anillos}", f"({id_})/2", "211.58 / 2")
+    bloque(f"RadioAsiento@Croquis_Anillo {anillos}", r["R"], "asiento del tubo: 219.1 / 2")
+    bloque("RadioRanuraInt@Croquis_Anillo en el anillo inferior", f"({r['OD']}+8.87)/2", "227.97 / 2")
+    bloque("RadioRanuraExt@Croquis_Anillo en el anillo inferior", f"({r['OD']}+22.85)/2",
+           "241.95 / 2; la ranura queda siempre de 6.99 de ancho")
+    brida = "en brida 2 pulgadas slip on carcasa 8 pulgadas PAH WT"
+    bloque(f"DiamExt@Croquis_Brida {brida}", r["brida_od"], "ASME B16.5 según Ø de conexión y clase")
+    bloque(f"Espesor@Brida {brida}", r["brida_e"])
+    bloque(f"Radio@Croquis_Brida {brida}", f"({r['brida_bc']})/2",
+           "círculo de pernos / 2; la pieza tiene 4 agujeros, sirve hasta las bridas de 4 pernos")
+    bloque(f"DiamInt@Croquis_Brida, DiamInt@Croquis_Cubo y DiamTubo@Croquis_Tubo {brida}", r["ODC"])
+    bloque(f"DiamCubo@Croquis_Cubo {brida}", f"ROUND(({r['ODC']})*1.05+14,1)", "provisional: 77.7 en 2\"")
+    bloque(f"DiamInt@Croquis_Tubo {brida}", f"ROUND(({r['ODC']})*0.85,1)", "provisional, igual que FC_Boquilla")
+    bloque("Largo@Cartucho en filtrante polinero wt", "[LargoElemento]")
+    a("Tus ensambles ubican la entrada a `[AlturaEntrada]` (800 en PAH, 434 en WAT) y la salida a 46 mm del fondo "
+      "del tubo. Esas alturas están en las relaciones de posición de `ENDABLE 2 WT`, que hay que rehacer contra las "
+      "piezas nuevas; si las haces con una distancia, captúrala y usa esas mismas reglas.\n")
     a("Los agujeros de las placas tienen que ser una **matriz circular** con su número de instancias como cota; "
       "si siguen dibujados en el croquis, DriveWorksXpress no puede cambiar cuántos hay.\n")
 
