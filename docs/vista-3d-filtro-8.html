@@ -1,0 +1,677 @@
+<title>Filtro multicartucho 8"</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: visor 3D grande a la izquierda y panel de ficha técnica a la derecha; en teléfono se apilan */
+:root {
+  --bg: #e9edf0;
+  --panel: #ffffff;
+  --fg: #14202a;
+  --muted: #5a6874;
+  --line: #d2d9df;
+  --accent: #0b6d93;
+  --warn: #8f4f00;
+  --warn-bg: #fff1dc;
+  --view-top: #f6f8f9;
+  --view-bottom: #c3cdd5;
+  --sw-tuyas: #7f8f9c;
+  --sw-recon: #1f86b5;
+  --sw-simpl: #d38a2a;
+  --f-display: "Barlow Semi Condensed", "Barlow", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1216; --panel: #141b21; --fg: #e3e9ee; --muted: #93a2ae; --line: #28333c;
+    --accent: #58b8de; --warn: #f2b765; --warn-bg: #2a2012; --view-top: #27323b; --view-bottom: #0b0f13;
+    --sw-tuyas: #8d9daa; --sw-recon: #3aa5d6; --sw-simpl: #e09a3c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1216; --panel: #141b21; --fg: #e3e9ee; --muted: #93a2ae; --line: #28333c;
+  --accent: #58b8de; --warn: #f2b765; --warn-bg: #2a2012; --view-top: #27323b; --view-bottom: #0b0f13;
+  --sw-tuyas: #8d9daa; --sw-recon: #3aa5d6; --sw-simpl: #e09a3c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 28px;
+}
+.wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+h1 {
+  font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 3.2vw, 32px);
+  letter-spacing: 0.01em; margin: 0; text-wrap: balance;
+}
+.code {
+  font-family: var(--f-mono); font-size: 14px; color: var(--accent);
+  border: 1px solid var(--line); background: var(--panel); padding: 2px 8px; border-radius: 4px;
+}
+.lead { margin: 0; color: var(--muted); max-width: 70ch; flex-basis: 100%; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.viewer {
+  position: relative; min-width: 0; height: min(78vh, 820px); min-height: 420px;
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  background: linear-gradient(180deg, var(--view-top), var(--view-bottom));
+}
+@media (max-width: 900px) { .viewer { height: 64vh; min-height: 380px; } }
+@media (max-width: 600px) { .hint { display: none; } .titleblock { font-size: 10.5px; padding: 4px 7px; } }
+.viewer canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.hint {
+  position: absolute; left: 12px; bottom: 10px; margin: 0; font-size: 12.5px; color: var(--muted);
+  background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 3px 8px; border-radius: 4px;
+  pointer-events: none;
+}
+.reset {
+  position: absolute; right: 10px; bottom: 10px;
+}
+.titleblock {
+  position: absolute; right: 10px; top: 10px; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted);
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 85%, transparent);
+  padding: 6px 9px; border-radius: 4px; line-height: 1.5; pointer-events: none; text-align: right;
+}
+aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+h2 {
+  font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--muted); margin: 0;
+}
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .lbl { font-weight: 600; font-size: 14px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--fg); font: 600 14px var(--f-body); padding: 7px 6px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--panel); }
+select, .btn {
+  font: 500 14px var(--f-body); color: var(--fg); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 5px; padding: 7px 9px;
+}
+.btn { cursor: pointer; font-weight: 600; }
+.btn:hover, .seg button:hover:not([aria-pressed="true"]) { border-color: var(--accent); color: var(--accent); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.range { display: flex; align-items: center; gap: 10px; }
+.range input { flex: 1; accent-color: var(--accent); min-width: 0; }
+.range output { font-family: var(--f-mono); font-size: 15px; min-width: 2ch; text-align: right; }
+.toggles { display: flex; flex-direction: column; gap: 8px; }
+.toggles label { display: flex; align-items: center; gap: 9px; font-weight: 500; cursor: pointer; }
+.toggles input { width: 17px; height: 17px; accent-color: var(--accent); }
+dl.specs { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; margin: 0; font-size: 14px; }
+dl.specs dt { color: var(--muted); }
+dl.specs dd { margin: 0; font-family: var(--f-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.warns { display: flex; flex-direction: column; gap: 8px; }
+.warn { background: var(--warn-bg); color: var(--warn); border-radius: 5px; padding: 8px 10px; font-size: 13.5px; }
+.legend { display: flex; flex-direction: column; gap: 7px; font-size: 13.5px; }
+.legend div { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 9px; align-items: start; }
+.sw { width: 14px; height: 14px; border-radius: 3px; margin-top: 3px; }
+.legend .muted { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Filtro multicartucho 8"</h1>
+    <span class="code" id="codigo">PAH-0200-21-082</span>
+    <p class="lead">Vista aproximada del ensamble <b>ENDABLE 2 WT</b> con las piezas que crea la macro y tus piezas de la carpeta NUEVO 2. Las medidas salen de las mismas reglas del configurador, así que cambian cuando cambias las opciones.</p>
+  </header>
+
+  <div class="grid">
+    <div class="viewer" id="viewer">
+      <div class="titleblock" id="tb">ESC. LIBRE · mm</div>
+      <p class="hint">Arrastra para girar · rueda o pellizco para acercar · dos dedos o clic derecho para mover</p>
+      <button class="btn reset" id="reset" type="button">Restablecer vista</button>
+    </div>
+
+    <aside>
+      <section class="card" aria-labelledby="h-conf">
+        <h2 id="h-conf">Configuración</h2>
+        <div class="field">
+          <span class="lbl">Versión</span>
+          <div class="seg" role="group" aria-label="Versión">
+            <button type="button" id="v-wat" aria-pressed="true">WAT · 6 cartuchos</button>
+            <button type="button" id="v-pah" aria-pressed="false">PAH · 5 cartuchos</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="n">Cartuchos alrededor</label>
+          <div class="range"><input type="range" id="n" min="3" max="8" step="1" value="6"><output id="n-out" for="n">6</output></div>
+        </div>
+        <div class="field">
+          <label for="largo">Largo del cartucho</label>
+          <select id="largo">
+            <option value="254">10" (254 mm)</option>
+            <option value="508">20" (508 mm)</option>
+            <option value="762">30" (762 mm)</option>
+            <option value="1016" selected>40" (1016 mm)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sch">Schedule del cuerpo</label>
+          <select id="sch">
+            <option value="2" selected>2 · Sch 10 (como el código)</option>
+            <option value="4">4 · Sch 40 (como dice el plano)</option>
+          </select>
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" id="corte" checked> Corte de un cuarto</label>
+          <label><input type="checkbox" id="origen"> Colorear según de dónde sale la pieza</label>
+          <label><input type="checkbox" id="internos" checked> Mostrar cartuchos e internos</label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-med">
+        <h2 id="h-med">Medidas según las reglas</h2>
+        <dl class="specs" id="specs"></dl>
+        <div class="warns" id="warns"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-ley">
+        <h2 id="h-ley">Origen de cada pieza</h2>
+        <div class="legend">
+          <div><span class="sw" style="background: var(--sw-tuyas)"></span><span><b>Tus piezas</b> <span class="muted">de NUEVO 2: soporte, tapa soporte, separador guía, tornillo y tuerca central, resorte, couplings, pasadores</span></span></div>
+          <div><span class="sw" style="background: var(--sw-recon)"></span><span><b>Reconstruidas</b> <span class="muted">con medidas del plano WAT: cuerpo, caps, anillos, bridas, tornillos pivotados, cartuchos, soportes de cartucho, patas, miple</span></span></div>
+          <div><span class="sw" style="background: var(--sw-simpl)"></span><span><b>Simplificadas</b> <span class="muted">porque el plano no las acota: orejas, brazo, soporte de bisagra, tuercas de los pivotados, guía de cartucho</span></span></div>
+        </div>
+        <p class="note">No es un render de SOLIDWORKS: es la misma geometría dibujada en el navegador. Las relaciones de posición son las del plano WAT.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DEG = Math.PI / 180;
+  var OD = 219.1;
+  var SCH = { "2": { t: 3.76, txt: "Sch 10" }, "4": { t: 8.18, txt: "Sch 40" } };
+  var state = { version: "WAT", n: 6, L: 1016, sch: "2", corte: true, origen: false, internos: true, entrada: 434 };
+
+  var viewer = document.getElementById("viewer");
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  viewer.insertBefore(renderer.domElement, viewer.firstChild);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(30, 1, 5, 20000);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.12;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x6d7780, 0.85));
+  var sun = new THREE.DirectionalLight(0xffffff, 0.95);
+  sun.position.set(900, 2200, 1500);
+  scene.add(sun);
+  var fill = new THREE.DirectionalLight(0xdfe8ff, 0.45);
+  fill.position.set(-1600, 600, -900);
+  scene.add(fill);
+
+  // ---------- Materiales ----------
+  function std(color, metal, rough) {
+    return new THREE.MeshStandardMaterial({ color: color, metalness: metal, roughness: rough, side: THREE.DoubleSide });
+  }
+  var M = {
+    inox: std(0xbcc5cc, 0.35, 0.36),
+    inoxOsc: std(0x9aa5ae, 0.4, 0.4),
+    perno: std(0x868f97, 0.45, 0.42),
+    cartucho: std(0x16a19c, 0.05, 0.72),
+    cartuchoTapa: std(0x0e6f6c, 0.05, 0.6),
+    oring: std(0x1b1c1e, 0.0, 0.55),
+    tuyas: std(0x7f8f9c, 0.2, 0.5),
+    recon: std(0x2a8cbc, 0.2, 0.45),
+    simpl: std(0xd8902e, 0.15, 0.5)
+  };
+  // Rayado de corte como en un plano
+  var hc = document.createElement("canvas");
+  hc.width = hc.height = 64;
+  var hx = hc.getContext("2d");
+  hx.fillStyle = "#d3dadf"; hx.fillRect(0, 0, 64, 64);
+  hx.strokeStyle = "#6b7984"; hx.lineWidth = 3;
+  for (var k = -64; k <= 128; k += 16) { hx.beginPath(); hx.moveTo(k, 64); hx.lineTo(k + 64, 0); hx.stroke(); }
+  var hatch = new THREE.CanvasTexture(hc);
+  hatch.wrapS = hatch.wrapT = THREE.RepeatWrapping;
+  hatch.repeat.set(1 / 14, 1 / 14);
+  hatch.encoding = THREE.sRGBEncoding;
+  var M_CORTE = new THREE.MeshBasicMaterial({ map: hatch, side: THREE.DoubleSide });
+
+  // origen: "T" tus piezas, "R" reconstruida, "S" simplificada
+  function mat(base, origen) {
+    if (!state.origen) return base;
+    return origen === "T" ? M.tuyas : origen === "R" ? M.recon : M.simpl;
+  }
+
+  // ---------- Constructores ----------
+  var root = null;
+
+  // Revolución de un perfil (r, y). "tramos" = listas de puntos; dentro de un tramo la
+  // superficie es suave y entre tramos hay arista viva. cortar = quitar el cuarto x>0, z>0.
+  function revolver(grupo, tramos, material, cortar) {
+    var phi0 = cortar ? Math.PI / 2 : 0;
+    var phiL = cortar ? Math.PI * 1.5 : Math.PI * 2;
+    tramos.forEach(function (tr) {
+      var pts = tr.map(function (p) { return new THREE.Vector2(Math.max(p[0], 0.0001), p[1]); });
+      var g = new THREE.LatheGeometry(pts, 112, phi0, phiL);
+      grupo.add(new THREE.Mesh(g, material));
+    });
+    if (cortar) {
+      var shape = new THREE.Shape();
+      var poli = [];
+      tramos.forEach(function (tr, i) { tr.forEach(function (p, j) { if (i === 0 || j > 0) poli.push(p); }); });
+      shape.moveTo(poli[0][0], poli[0][1]);
+      for (var i = 1; i < poli.length; i++) shape.lineTo(poli[i][0], poli[i][1]);
+      var sg = new THREE.ShapeGeometry(shape);
+      var a = new THREE.Mesh(sg, M_CORTE);
+      grupo.add(a);
+      var b = new THREE.Mesh(sg, M_CORTE);
+      b.rotation.y = -Math.PI / 2;
+      grupo.add(b);
+    }
+  }
+
+  // Perfil cerrado de segmentos rectos -> tramos de 2 puntos
+  function tramosRectos(poli) {
+    var out = [];
+    for (var i = 0; i < poli.length; i++) out.push([poli[i], poli[(i + 1) % poli.length]]);
+    return out;
+  }
+
+  function arco(cx, cy, p1, p2, n) {
+    var a1 = Math.atan2(p1[1] - cy, p1[0] - cx), a2 = Math.atan2(p2[1] - cy, p2[0] - cx);
+    var r = Math.hypot(p1[0] - cx, p1[1] - cy), pts = [];
+    for (var i = 0; i <= n; i++) { var a = a1 + (a2 - a1) * i / n; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
+    return pts;
+  }
+
+  // Cap bombeado como en la macro: falda s, casquete de altura hd, espesor t. Abre en y = 0, sube.
+  function capTramos(Ro, t, s, hd) {
+    var ri = Ro - t, hi = hd - t;
+    var yco = s - (Ro * Ro - hd * hd) / (2 * hd), yci = s - (ri * ri - hi * hi) / (2 * hi);
+    return [
+      [[Ro, 0], [ri, 0]],
+      [[ri, 0], [ri, s]],
+      arco(0, yci, [ri, s], [0, s + hi], 28),
+      [[0, s + hi], [0, s + hd]],
+      arco(0, yco, [0, s + hd], [Ro, s], 28),
+      [[Ro, s], [Ro, 0]]
+    ];
+  }
+
+  function cilindro(grupo, r, h, material, x, y, z, seg) {
+    var m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg || 40), material);
+    m.position.set(x || 0, (y || 0) + h / 2, z || 0);
+    grupo.add(m);
+    return m;
+  }
+
+  function tubo(grupo, rE, rI, y0, y1, material) {
+    revolver(grupo, tramosRectos([[rI, y0], [rE, y0], [rE, y1], [rI, y1]]), material, false);
+  }
+
+  function caja(grupo, sx, sy, sz, material, x, y, z) {
+    var m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), material);
+    m.position.set(x, y, z);
+    grupo.add(m);
+    return m;
+  }
+
+  // Placa horizontal de diámetro D y espesor e con agujeros [x, z, d], cara inferior en y
+  function placa(grupo, D, e, agujeros, y, material) {
+    var s = new THREE.Shape();
+    s.absarc(0, 0, D / 2, 0, Math.PI * 2, false);
+    agujeros.forEach(function (h) {
+      var p = new THREE.Path();
+      p.absarc(h[0], -h[1], h[2] / 2, 0, Math.PI * 2, true);
+      s.holes.push(p);
+    });
+    var g = new THREE.ExtrudeGeometry(s, { depth: e, bevelEnabled: false, curveSegments: 40 });
+    g.rotateX(-Math.PI / 2);
+    var m = new THREE.Mesh(g, material);
+    m.position.y = y;
+    grupo.add(m);
+  }
+
+  // Grupo local: +X radial, +Z tangencial, girado al ángulo tita (grados, desde +X hacia +Z)
+  function enAngulo(padre, tita) {
+    var g = new THREE.Group();
+    g.rotation.y = -tita * DEG;
+    padre.add(g);
+    return g;
+  }
+  function enCuartoCortado(tita) {
+    var t = ((tita % 360) + 360) % 360;
+    return state.corte && t > 0 && t < 90;
+  }
+
+  function resorte(grupo, rMedio, rAlambre, vueltas, y0, alto, material) {
+    var pts = [], n = vueltas * 24;
+    for (var i = 0; i <= n; i++) {
+      var a = i / 24 * Math.PI * 2;
+      pts.push(new THREE.Vector3(rMedio * Math.cos(a), y0 + alto * i / n, rMedio * Math.sin(a)));
+    }
+    var curva = new THREE.CatmullRomCurve3(pts);
+    grupo.add(new THREE.Mesh(new THREE.TubeGeometry(curva, n * 2, rAlambre, 8, false), material));
+  }
+
+  // ---------- Reglas (las mismas de reglas-carcazas.md) ----------
+  function calcular() {
+    var t = SCH[state.sch].t, ID = OD - 2 * t, L = state.L, n = state.n;
+    var pcd = n === 5 ? 130 : n === 6 ? 140 : Math.round(70 / Math.sin(Math.PI / n));
+    var H = L + 184;
+    var c = {
+      t: t, ID: ID, L: L, n: n, H: H, pcd: pcd,
+      anilloD: Math.round(OD + 37), ranI: OD + 8.87, ranE: OD + 22.85,
+      soporteD: Math.round(ID * 10) / 10, tapaSopD: Math.round((ID - 4.6) * 10) / 10, sepD: Math.round((ID - 2) * 10) / 10,
+      tornilloC: L + 84, salida: Math.round(60.3 / 2 + 16), cara: OD / 2 + 105.45,
+      entrada: state.entrada, avisos: []
+    };
+    var maxEnt = H - 160, minEnt = 160;
+    if (c.entrada > maxEnt) { c.avisos.push("La entrada a " + c.entrada + " mm no cabe en un cuerpo de " + H + " mm. La dibujé a " + maxEnt + " mm."); c.entrada = maxEnt; }
+    if (c.entrada < minEnt) c.entrada = minEnt;
+    var exterior = pcd / 2 + 63.5 / 2;
+    if (exterior > ID / 2 - 0.5) {
+      c.avisos.push("Con " + n + " cartuchos el círculo queda de Ø" + pcd + " y los cartuchos llegan a Ø" + (exterior * 2).toFixed(1) +
+        ", más que el interior del cuerpo (Ø" + ID.toFixed(2) + "). En 8\" caben hasta 6 alrededor.");
+    }
+    var paso = 2 * (pcd / 2) * Math.sin(Math.PI / n);
+    if (paso < 63.5) c.avisos.push("Con " + n + " cartuchos en Ø" + pcd + " se tocan entre sí (paso de " + paso.toFixed(1) + " mm).");
+    if (state.sch === "4") {
+      c.avisos.push("En Sch 40 el interior baja a Ø" + ID.toFixed(2) + ". Tu soporte actual de Ø211.6 no entraría; con las reglas queda de Ø" + c.soporteD + ".");
+    }
+    return c;
+  }
+
+  // ---------- Ensamble ----------
+  function construir() {
+    var c = calcular();
+    if (root) {
+      scene.remove(root);
+      root.traverse(function (o) { if (o.geometry) o.geometry.dispose(); });
+    }
+    root = new THREE.Group();
+    scene.add(root);
+    var corte = state.corte, t = c.t, Ro = OD / 2, Ri = c.ID / 2, H = c.H;
+
+    // Cuerpo (tubo)
+    revolver(root, tramosRectos([[Ri, 0], [Ro, 0], [Ro, H], [Ri, H]]), mat(M.inox, "R"), corte);
+
+    // Cap fondo (boca arriba en y = 0, casquete hacia abajo)
+    var capF = new THREE.Group();
+    capF.scale.y = -1;
+    root.add(capF);
+    revolver(capF, capTramos(Ro, t, 10, 35), mat(M.inox, "R"), corte);
+
+    // Anillo inferior: el tubo entra 8 mm en el asiento
+    var yAI = H - 8, h = 22;
+    var rE = c.anilloD / 2, rA = Ro, r1 = c.ranI / 2, r2 = c.ranE / 2;
+    var ai = new THREE.Group(); ai.position.y = yAI; root.add(ai);
+    revolver(ai, tramosRectos([[Ri, 8], [Ri, h], [r1, h], [r1, h - 4], [r2, h - 4], [r2, h], [rE, h], [rE, 0], [rA, 0], [rA, 8]]),
+      mat(M.inox, "R"), corte);
+    // O'ring en la ranura
+    var oring = new THREE.Mesh(new THREE.TorusGeometry((r1 + r2) / 2, 2.6, 12, 120, corte ? Math.PI * 1.5 : Math.PI * 2), M.oring);
+    oring.rotation.x = Math.PI / 2;
+    if (corte) oring.rotation.z = Math.PI / 2;
+    oring.position.y = h - 1.6;
+    ai.add(oring);
+
+    // Anillo superior, con el cap tapa en su asiento
+    var yAS = yAI + h;
+    var as = new THREE.Group(); as.position.y = yAS; root.add(as);
+    revolver(as, tramosRectos([[Ri, 8], [Ri, h], [rE, h], [rE, 0], [rA, 0], [rA, 8]]), mat(M.inox, "R"), corte);
+    var capT = new THREE.Group(); capT.position.y = yAS; root.add(capT);
+    revolver(capT, capTramos(Ro, t, 10, 35), mat(M.inox, "R"), corte);
+    var yTopeCap = yAS + 45;
+
+    // Boquillas: entrada en +X (tita 0) a la altura de entrada, salida en -X a 46 mm
+    function boquilla(tita, y) {
+      var g = enAngulo(root, tita);
+      g.position.y = y;
+      var b = new THREE.Group(); b.rotation.z = -Math.PI / 2; g.add(b); // eje local Y -> radial +X
+      var cara = c.cara, dentro = Ri - 4;
+      // tubo 2" Sch 40 desde dentro del cuerpo hasta la cara
+      var tub = new THREE.Group(); tub.position.y = dentro; b.add(tub);
+      tubo(tub, 30.15, 25.65, 0, cara - dentro, mat(M.inox, "R"));
+      // brida slip-on clase 150 con cubo
+      var fr = new THREE.Group(); fr.position.y = cara - 19.05; b.add(fr);
+      placa(fr, 152.4, 19.05, [[60.325, 0, 19.05], [-60.325, 0, 19.05], [0, 60.325, 19.05], [0, -60.325, 19.05]], 0, mat(M.inox, "R"));
+      fr.rotation.y = Math.PI / 4;
+      var cubo = new THREE.Group(); cubo.position.y = cara - 23.9; b.add(cubo);
+      tubo(cubo, 77.3 / 2, 30.15, 0, 23.9 - 19.05, mat(M.inox, "R"));
+    }
+    boquilla(0, c.entrada);
+    boquilla(180, c.salida);
+
+    // Couplings de 1/4" (tus piezas)
+    function coupling(tita, y, radial) {
+      var g = enAngulo(root, tita); g.position.y = y;
+      var b = new THREE.Group(); b.rotation.z = -Math.PI / 2; g.add(b);
+      var cg = new THREE.Group(); cg.position.y = radial - 3; b.add(cg);
+      tubo(cg, 9.5, 5.5, 0, 25, mat(M.inoxOsc, "T"));
+    }
+    coupling(150, c.entrada, Ro);
+    coupling(210, 22, Ro);
+    var cpTop = new THREE.Group(); cpTop.position.set(-60, yAS + 35, -20); root.add(cpTop);
+    tubo(cpTop, 9.5, 5.5, 0, 24, mat(M.inoxOsc, "T"));
+
+    // Drenaje: miple de 1/2" bajo el cap fondo
+    var mp = new THREE.Group(); mp.position.y = -105; root.add(mp);
+    tubo(mp, 10.65, 7.9, 0, 66, mat(M.inoxOsc, "R"));
+
+    // Patas: base Ø90 x 9 y ángulo 30 x 30 x 3, alto 196.82, a 142 mm bajo el cap
+    var yPiso = -45 - 142;
+    [90, 210, 330].forEach(function (tita) {
+      var g = enAngulo(root, tita);
+      cilindro(g, 45, 9, mat(M.inoxOsc, "R"), 128, yPiso, 0, 48);
+      caja(g, 30, 196.82, 3, mat(M.inoxOsc, "R"), 128, yPiso + 98.41, 13.5);
+      caja(g, 3, 196.82, 30, mat(M.inoxOsc, "R"), 113 + 1.5, yPiso + 98.41, 0);
+      caja(g, 3, 196.82, 30, mat(M.inoxOsc, "R"), 143 - 1.5, yPiso + 98.41, 0);
+    });
+
+    // Tornillos pivotados: 4, con orejas abajo (anillo inferior) y arriba (anillo superior)
+    var rPiv = Math.round(c.anilloD / 2 + 20);
+    [45, 135, 225, 315].forEach(function (tita) {
+      if (enCuartoCortado(tita)) return;
+      var g = enAngulo(root, tita);
+      var yOjo = yAI - 25;
+      [-14.3, 14.3].forEach(function (z) {
+        caja(g, 40, 50, 9.5, mat(M.inoxOsc, "S"), rE - 2 + 20, yOjo + 5, z);       // oreja inferior
+        caja(g, 40, h + 8, 9.5, mat(M.inoxOsc, "S"), rE - 2 + 20, yAS + (h + 8) / 2, z); // oreja superior
+      });
+      // pasador
+      var pas = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 52, 24), mat(M.perno, "T"));
+      pas.rotation.x = Math.PI / 2; pas.position.set(rPiv, yOjo, 0); g.add(pas);
+      // ojo y vástago
+      var ojo = new THREE.Mesh(new THREE.TorusGeometry(10, 5.4, 12, 32), mat(M.perno, "R"));
+      ojo.position.set(rPiv, yOjo, 0); g.add(ojo);
+      cilindro(g, 9.525, 92, mat(M.perno, "R"), rPiv, yOjo + 8, 0, 24);
+      // tuerca de mariposa
+      var yT = yAS + h + 8;
+      cilindro(g, 25, 30, mat(M.perno, "S"), rPiv, yT, 0, 32);
+      caja(g, 9, 12.7, 100, mat(M.perno, "S"), rPiv, yT + 21, 0);
+    });
+
+    // Bisagra y brazo (atrás, tita 270)
+    var gb = enAngulo(root, 270);
+    [-22, 22].forEach(function (z) {
+      caja(gb, 60, 80, 9.5, mat(M.inoxOsc, "S"), rE + 26, yAS - 20, z);
+    });
+    var brazo = caja(gb, 250, 12.7, 30, mat(M.inoxOsc, "S"), rE + 40 - 125, yTopeCap + 12, 0);
+    var eje = new THREE.Mesh(new THREE.CylinderGeometry(9.5, 9.5, 64, 24), mat(M.perno, "S"));
+    eje.rotation.x = Math.PI / 2; eje.position.set(rE + 40, yAS + 5, 0); gb.add(eje);
+    caja(gb, 16, yTopeCap + 12 - (yAS + 5), 16, mat(M.inoxOsc, "S"), rE + 40, (yTopeCap + 12 + yAS + 5) / 2, 0);
+
+    // ---------- Internos ----------
+    if (state.internos) {
+      var gi = new THREE.Group(); root.add(gi);
+      var rp = c.pcd / 2, pos = [];
+      for (var i = 0; i < c.n; i++) { var a = (90 + i * 360 / c.n) * DEG; pos.push([rp * Math.cos(a), rp * Math.sin(a)]); }
+      var ySop = 83;
+      // soporte de cartuchos (SOPORTE 2 CANAS WT), 9 mm
+      placa(gi, c.soporteD, 9, pos.map(function (p) { return [p[0], p[1], 28]; }).concat([[0, 0, 19]]), ySop, mat(M.inox, "T"));
+      var yC0 = ySop + 9, yC1 = yC0 + c.L;
+      // tapa soporte, 4.5 mm
+      placa(gi, c.tapaSopD, 4.5, pos.map(function (p) { return [p[0], p[1], 28]; }).concat([[0, 0, 19]]), yC1, mat(M.inox, "T"));
+      // separador guía al centro del cartucho
+      if (c.L >= 508) {
+        placa(gi, c.sepD, 6, pos.map(function (p) { return [p[0], p[1], 65]; }).concat([[0, 0, 65]]), yC0 + c.L / 2 + 6, mat(M.inox, "T"));
+      }
+      // cartuchos 2.5" con su soporte y guía
+      var gCart = new THREE.LatheGeometry([new THREE.Vector2(31.75, 6), new THREE.Vector2(31.75, c.L - 6)], 48);
+      var gTapa = new THREE.LatheGeometry([new THREE.Vector2(14, 0), new THREE.Vector2(32.2, 0), new THREE.Vector2(32.2, 6), new THREE.Vector2(14, 6)], 48);
+      var gInt = new THREE.LatheGeometry([new THREE.Vector2(14, c.L), new THREE.Vector2(14, 0)], 32);
+      pos.forEach(function (p) {
+        var ct = new THREE.Group(); ct.position.set(p[0], yC0, p[1]); gi.add(ct);
+        ct.add(new THREE.Mesh(gCart, mat(M.cartucho, "R")));
+        ct.add(new THREE.Mesh(gInt, mat(M.cartuchoTapa, "R")));
+        var t0 = new THREE.Mesh(gTapa, mat(M.cartuchoTapa, "R")); ct.add(t0);
+        var t1 = new THREE.Mesh(gTapa, mat(M.cartuchoTapa, "R")); t1.position.y = c.L - 6; ct.add(t1);
+        tubo(ct, 14, 11, -12, 13, mat(M.inoxOsc, "R"));             // soporte de cartucho
+        var cono = new THREE.Mesh(new THREE.ConeGeometry(14, 35, 24), mat(M.inoxOsc, "S"));
+        cono.position.y = 13 + 17.5; ct.add(cono);                   // guía (simplificada)
+      });
+      // tornillo central, resorte y tuerca central
+      cilindro(gi, 9.5, c.tornilloC, mat(M.perno, "T"), 0, ySop, 0, 24);
+      var yR = yC1 + 4.5;
+      tubo(gi, 14, 9.6, yR, yR + 11, mat(M.perno, "T"));
+      tubo(gi, 33.25, 9.6, yR, yR + 3, mat(M.perno, "T"));
+      resorte(gi, 13, 1.25, 5, yR + 11, 26, mat(M.perno, "T"));
+      tubo(gi, 33.25, 9.6, yR + 37, yR + 40, mat(M.perno, "T"));
+      var yN = yR + 40;
+      var nut = new THREE.Mesh(new THREE.CylinderGeometry(19, 25, 30, 32), mat(M.perno, "T"));
+      nut.position.set(0, yN + 15, 0); gi.add(nut);
+      [-1, 1].forEach(function (sx) {
+        var w = new THREE.Mesh(new THREE.CylinderGeometry(6.35, 6.35, 40, 16), mat(M.perno, "T"));
+        w.position.set(sx * 30, yN + 30, 0); w.rotation.z = -sx * 45 * DEG; gi.add(w);
+      });
+    }
+
+    // Piso
+    var grid = new THREE.GridHelper(1400, 28, colorToken("--muted"), colorToken("--line"));
+    grid.position.y = yPiso;
+    grid.material.transparent = true; grid.material.opacity = 0.55;
+    root.add(grid);
+
+    pintarFicha(c, yPiso, yTopeCap);
+    return { alto: yTopeCap - yPiso, medio: (yTopeCap + yPiso) / 2 };
+  }
+
+  function colorToken(name) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return new THREE.Color(v || "#888888");
+  }
+
+  // ---------- Ficha ----------
+  function pintarFicha(c, yPiso, yTope) {
+    var codigo = "PAH-0200-21-08" + state.sch;
+    document.getElementById("codigo").textContent = codigo;
+    document.getElementById("tb").innerHTML = codigo + "<br>" + state.n + " × 2.5\" × " + Math.round(c.L / 25.4) + "\" · " + SCH[state.sch].txt;
+    var f = function (v, d) { return v.toFixed(d === undefined ? 1 : d).replace(/\.0+$/, ""); };
+    var filas = [
+      ["Cuerpo", "Ø" + OD + " × " + c.t + " × " + c.H],
+      ["Interior", "Ø" + c.ID.toFixed(2)],
+      ["Anillos de cierre", "Ø" + c.anilloD + " × 22"],
+      ["Ranura O'ring", "Ø" + f(c.ranI, 2) + "–" + f(c.ranE, 2)],
+      ["Entrada / salida", c.entrada + " / " + c.salida + " mm"],
+      ["Cara a cara bridas", f(c.cara * 2, 1) + " mm"],
+      ["Cartuchos", c.n + " en Ø" + c.pcd],
+      ["Soporte / tapa", "Ø" + c.soporteD + " / Ø" + c.tapaSopD],
+      ["Separador guía", c.L >= 508 ? "Ø" + c.sepD : "no lleva"],
+      ["Tornillo central", c.tornilloC + " mm"],
+      ["Altura total", Math.round(yTope - yPiso) + " mm"]
+    ];
+    var dl = document.getElementById("specs");
+    dl.innerHTML = "";
+    filas.forEach(function (r) {
+      var dt = document.createElement("dt"); dt.textContent = r[0];
+      var dd = document.createElement("dd"); dd.textContent = r[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    var w = document.getElementById("warns");
+    w.innerHTML = "";
+    c.avisos.forEach(function (a) { var d = document.createElement("div"); d.className = "warn"; d.textContent = a; w.appendChild(d); });
+  }
+
+  // ---------- Vista ----------
+  var medidas = null;
+  function encuadrar() {
+    // distancia para que quepa el alto (y el ancho en pantallas angostas) con margen
+    var t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    var dAlto = (medidas.alto * 0.5 * 1.32) / t;
+    var dAncho = (720 * 0.5 * 1.2) / (t * Math.max(camera.aspect, 0.2));
+    var d = Math.max(dAlto, dAncho);
+    var dir = new THREE.Vector3(1, 0.36, 1.05).normalize();
+    controls.target.set(0, medidas.medio, 0);
+    camera.position.copy(controls.target).addScaledVector(dir, d);
+    camera.updateProjectionMatrix();
+    controls.update();
+  }
+  function redimensionar() {
+    var w = viewer.clientWidth, h = viewer.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  function rehacer(reencuadrar) {
+    medidas = construir();
+    if (reencuadrar) encuadrar();
+  }
+
+  // ---------- Controles ----------
+  var bW = document.getElementById("v-wat"), bP = document.getElementById("v-pah");
+  var nIn = document.getElementById("n"), nOut = document.getElementById("n-out");
+  function marcarVersion() {
+    bW.setAttribute("aria-pressed", String(state.version === "WAT"));
+    bP.setAttribute("aria-pressed", String(state.version === "PAH"));
+  }
+  function version(v) {
+    state.version = v;
+    state.n = v === "WAT" ? 6 : 5;
+    state.entrada = v === "WAT" ? 434 : 800;
+    nIn.value = state.n; nOut.textContent = state.n;
+    marcarVersion();
+    rehacer(false);
+  }
+  bW.addEventListener("click", function () { version("WAT"); });
+  bP.addEventListener("click", function () { version("PAH"); });
+  nIn.addEventListener("input", function () {
+    state.n = parseInt(nIn.value, 10); nOut.textContent = state.n;
+    state.version = state.n === 6 && state.entrada === 434 ? "WAT" : state.n === 5 && state.entrada === 800 ? "PAH" : "";
+    marcarVersion(); rehacer(false);
+  });
+  document.getElementById("largo").addEventListener("change", function (e) { state.L = parseInt(e.target.value, 10); rehacer(true); });
+  document.getElementById("sch").addEventListener("change", function (e) { state.sch = e.target.value; rehacer(false); });
+  document.getElementById("corte").addEventListener("change", function (e) { state.corte = e.target.checked; rehacer(false); });
+  document.getElementById("origen").addEventListener("change", function (e) { state.origen = e.target.checked; rehacer(false); });
+  document.getElementById("internos").addEventListener("change", function (e) { state.internos = e.target.checked; rehacer(false); });
+  document.getElementById("reset").addEventListener("click", encuadrar);
+
+  // Tema: el piso toma los colores del tema
+  try {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { rehacer(false); });
+    new MutationObserver(function () { rehacer(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  } catch (e) {}
+
+  if (window.ResizeObserver) new ResizeObserver(redimensionar).observe(viewer);
+  window.addEventListener("resize", redimensionar);
+
+  redimensionar();
+  rehacer(true);
+  (function loop() {
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>
